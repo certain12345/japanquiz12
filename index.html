@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本語単語クイズゲーム</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .word-display {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .kanji {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+        
+        .reading {
+            font-size: 24px;
+            color: #2563eb;
+            margin-bottom: 16px;
+            min-height: 36px;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-know {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .btn-know:hover {
+            background-color: #059669;
+        }
+        
+        .btn-dont-know {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .btn-dont-know:hover {
+            background-color: #dc2626;
+        }
+        
+        .btn-next {
+            background-color: #2563eb;
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-next:hover {
+            background-color: #1d4ed8;
+        }
+        
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+        
+        .reset-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .reset-btn:hover {
+            color: #2563eb;
+        }
+        
+        .results {
+            text-align: center;
+        }
+        
+        .results h1 {
+            font-size: 28px;
+            margin-bottom: 24px;
+        }
+        
+        .score {
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .percentage {
+            margin-bottom: 24px;
+        }
+        
+        .word-list-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+        
+        .word-list {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 8px;
+        }
+        
+        .word-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .word-item:last-child {
+            border-bottom: none;
+        }
+        
+        .word-text {
+            display: flex;
+            align-items: center;
+        }
+        
+        .word-kanji {
+            font-weight: 500;
+        }
+        
+        .word-reading {
+            color: #6b7280;
+            margin-left: 8px;
+        }
+        
+        .word-result {
+            font-weight: bold;
+        }
+        
+        .correct {
+            color: #10b981;
+        }
+        
+        .incorrect {
+            color: #ef4444;
+        }
+        
+        .play-again {
+            background-color: #2563eb;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .play-again:hover {
+            background-color: #1d4ed8;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Quiz Screen -->
+        <div id="quiz-screen">
+            <div class="header">
+                <div id="progress">単語 1/29</div>
+                <div id="known-count">知ってる: 0</div>
+            </div>
+            
+            <div class="word-display">
+                <div class="kanji" id="current-word"></div>
+                <div class="reading" id="current-reading"></div>
+            </div>
+            
+            <div class="buttons" id="answer-buttons">
+                <button class="btn btn-know" id="btn-know">知ってる ⚪</button>
+                <button class="btn btn-dont-know" id="btn-dont-know">知らない ✕</button>
+            </div>
+            
+            <button class="btn btn-next hidden" id="btn-next">次へ</button>
+            
+            <div class="footer">
+                <div id="remaining">残り単語: 28</div>
+                <button class="reset-btn" id="btn-reset">リセット</button>
+            </div>
+        </div>
+        
+        <!-- Results Screen -->
+        <div id="results-screen" class="results hidden">
+            <h1>クイズ完了！</h1>
+            <p class="score" id="score">あなたのスコア: 0/29 単語</p>
+            <p class="percentage" id="percentage">0% 正解率</p>
+            
+            <h2 class="word-list-title">単語一覧:</h2>
+            <div class="word-list" id="word-list">
+                <!-- Word items will be added here dynamically -->
+            </div>
+            
+            <button class="play-again" id="btn-play-again">もう一度プレイする</button>
+        </div>
+    </div>
+
+    <script>
+        // 単語リスト（漢字と読み方のペア）
+        const words = [
+            { kanji: '撮影', reading: 'さつえい' },
+            { kanji: '付近', reading: 'ふきん' },
+            { kanji: '相互', reading: 'そうご' },
+            { kanji: '俯瞰', reading: 'ふかん' },
+            { kanji: '合宿', reading: 'がっしゅく' },
+            { kanji: '誠実', reading: 'せいじつ' },
+            { kanji: '倫理', reading: 'りんり' },
+            { kanji: '脚本', reading: 'きゃくほん' },
+            { kanji: '就職', reading: 'しゅうしょく' },
+            { kanji: '詭弁', reading: 'きべん' },
+            { kanji: '充電', reading: 'じゅうでん' },
+            { kanji: '義務', reading: 'ぎむ' },
+            { kanji: '記憶', reading: 'きおく' },
+            { kanji: '抑圧', reading: 'よくあつ' },
+            { kanji: '実際', reading: 'じっさい' },
+            { kanji: '院卒', reading: 'いんそつ' },
+            { kanji: '下道', reading: 'したみち' },
+            { kanji: '払拭', reading: 'ふっしょく' },
+            { kanji: '急きょ', reading: 'きゅうきょ' },
+            { kanji: '応用', reading: 'おうよう' },
+            { kanji: '促進', reading: 'そくしん' },
+            { kanji: '上京', reading: 'じょうきょう' },
+            { kanji: '網羅', reading: 'もうら' },
+            { kanji: '貢献', reading: 'こうけん' },
+            { kanji: '本質', reading: 'ほんしつ' },
+            { kanji: '概念', reading: 'がいねん' },
+            { kanji: '漠然と', reading: 'ばくぜんと' },
+            { kanji: '主体的', reading: 'しゅたいてき' },
+            { kanji: '多角的', reading: 'たかくてき' }
+        ];
+
+        // DOM要素
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const currentWordElement = document.getElementById('current-word');
+        const currentReadingElement = document.getElementById('current-reading');
+        const progressElement = document.getElementById('progress');
+        const knownCountElement = document.getElementById('known-count');
+        const remainingElement = document.getElementById('remaining');
+        const answerButtonsElement = document.getElementById('answer-buttons');
+        const btnKnow = document.getElementById('btn-know');
+        const btnDontKnow = document.getElementById('btn-dont-know');
+        const btnNext = document.getElementById('btn-next');
+        const btnReset = document.getElementById('btn-reset');
+        const btnPlayAgain = document.getElementById('btn-play-again');
+        const scoreElement = document.getElementById('score');
+        const percentageElement = document.getElementById('percentage');
+        const wordListElement = document.getElementById('word-list');
+
+        // ゲーム状態
+        let shuffledWords = [];
+        let currentWordIndex = 0;
+        let answers = [];
+        let knownCount = 0;
+
+        // ゲームの初期化
+        function initGame() {
+            // 単語をシャッフル
+            shuffledWords = [...words].sort(() => Math.random() - 0.5);
+            currentWordIndex = 0;
+            answers = Array(words.length).fill(null);
+            knownCount = 0;
+            
+            // 表示を更新
+            updateDisplay();
+            
+            // 画面切り替え
+            quizScreen.classList.remove('hidden');
+            resultsScreen.classList.add('hidden');
+        }
+
+        // 表示を更新
+        function updateDisplay() {
+            const currentWord = shuffledWords[currentWordIndex];
+            currentWordElement.textContent = currentWord.kanji;
+            currentReadingElement.textContent = '';
+            progressElement.textContent = `単語 ${currentWordIndex + 1}/${shuffledWords.length}`;
+            knownCountElement.textContent = `知ってる: ${knownCount}`;
+            remainingElement.textContent = `残り単語: ${shuffledWords.length - (currentWordIndex + 1)}`;
+            
+            // ボタン表示を切り替え
+            answerButtonsElement.classList.remove('hidden');
+            btnNext.classList.add('hidden');
+        }
+
+        // 知っているボタンのクリックハンドラ
+        btnKnow.addEventListener('click', () => {
+            answerQuestion(true);
+        });
+
+        // 知らないボタンのクリックハンドラ
+        btnDontKnow.addEventListener('click', () => {
+            answerQuestion(false);
+        });
+
+        // 質問に回答
+        function answerQuestion(isKnown) {
+            // 回答を記録
+            answers[currentWordIndex] = isKnown;
+            if (isKnown) {
+                knownCount++;
+                knownCountElement.textContent = `知ってる: ${knownCount}`;
+            }
+            
+            // 読み方を表示
+            currentReadingElement.textContent = shuffledWords[currentWordIndex].reading;
+            
+            // ボタン表示を切り替え
+            answerButtonsElement.classList.add('hidden');
+            btnNext.classList.remove('hidden');
+        }
+
+        // 次へボタンのクリックハンドラ
+        btnNext.addEventListener('click', () => {
+            currentWordIndex++;
+            
+            // まだ単語が残っている場合
+            if (currentWordIndex < shuffledWords.length) {
+                updateDisplay();
+            } else {
+                // すべての単語を終えた場合
+                showResults();
+            }
+        });
+
+        // 結果表示
+        function showResults() {
+            // スコア計算
+            const correctCount = answers.filter(answer => answer === true).length;
+            const percentage = Math.round((correctCount / shuffledWords.length) * 100);
+            
+            // 結果画面の更新
+            scoreElement.textContent = `あなたのスコア: ${correctCount}/${shuffledWords.length} 単語`;
+            percentageElement.textContent = `${percentage}% 正解率`;
+            
+            // 単語リストをクリア
+            wordListElement.innerHTML = '';
+            
+            // 単語リストを作成
+            shuffledWords.forEach((word, index) => {
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                
+                const wordText = document.createElement('div');
+                wordText.className = 'word-text';
+                
+                const wordKanji = document.createElement('span');
+                wordKanji.className = 'word-kanji';
+                wordKanji.textContent = word.kanji;
+                
+                const wordReading = document.createElement('span');
+                wordReading.className = 'word-reading';
+                wordReading.textContent = `(${word.reading})`;
+                
+                wordText.appendChild(wordKanji);
+                wordText.appendChild(wordReading);
+                
+                const wordResult = document.createElement('div');
+                wordResult.className = 'word-result';
+                
+                if (answers[index] === true) {
+                    wordResult.textContent = '⚪';
+                    wordResult.classList.add('correct');
+                } else {
+                    wordResult.textContent = '✕';
+                    wordResult.classList.add('incorrect');
+                }
+                
+                wordItem.appendChild(wordText);
+                wordItem.appendChild(wordResult);
+                
+                wordListElement.appendChild(wordItem);
+            });
+            
+            // 画面切り替え
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+        }
+
+        // リセットボタンのクリックハンドラ
+        btnReset.addEventListener('click', initGame);
+
+        // もう一度プレイするボタンのクリックハンドラ
+        btnPlayAgain.addEventListener('click', initGame);
+
+        // ゲーム開始
+        initGame();
+    </script>
+</body>
+</html>
